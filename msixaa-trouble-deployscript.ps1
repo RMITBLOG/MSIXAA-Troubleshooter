@@ -1,0 +1,2 @@
+New-AzResourceGroup -Name msixaa-logs -Location UKSouth
+New-AzResourceGroupDeployment -ResourceGroupName msixaa-logs -TemplateUri https://raw.githubusercontent.com/RMITBLOG/MSIXAA-Troubleshooter/main/azuredeploy.json -location UKsouth -WorkspaceName msixaalogs
