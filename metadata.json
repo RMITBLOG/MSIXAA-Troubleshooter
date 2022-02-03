@@ -1,0 +1,9 @@
+{
+  "$schema": "https://aka.ms/azure-quickstart-templates-metadata-schema#",
+  "type": "QuickStart",
+  "itemDisplayName": "MSIX app attach Troubleshooter",
+  "description": "This template deploys a log analytics workspace and the assoicated configurations for MSIX app attach",
+  "summary": "This template allows you to troubleshoot MSIX app attach issues within Azure Virtual Desktop",
+  "githubUsername": "rmitblog",
+  "dateUpdated": "2022-02-03"
+}
