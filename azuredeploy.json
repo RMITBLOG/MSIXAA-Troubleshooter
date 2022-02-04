@@ -1,0 +1,527 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-08-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": {
+      "type": "string",
+      "defaultValue": "msixaalogs"
+    },
+    "location": {
+      "type": "string"
+    },
+    "workbookDisplayName": {
+      "type": "string",
+      "defaultValue": "MSIXAA_Dash",
+      "metadata": {
+        "description": "The friendly name for the workbook that is used in the Gallery or Saved List.  This name must be unique within a resource group."
+      }
+    },
+    "workbookType": {
+      "type": "string",
+      "defaultValue": "workbook",
+      "metadata": {
+        "description": "The gallery that the workbook will been shown under. Supported values include workbook, tsg, etc. Usually, this is 'workbook'"
+      }
+    },
+    "workbookSourceId": {
+      "type": "string",
+      "defaultValue": "[resourceID('Microsoft.OperationalInsights/workspaces',parameters('workspacename'))]",
+      "metadata": {
+        "description": "The id of resource instance to which the workbook will be associated"
+      }
+    },
+    "workbookId": {
+      "type": "string",
+      "defaultValue": "[newGuid()]",
+      "metadata": {
+        "description": "The unique guid for this workbook instance"
+      }
+    }
+
+
+
+  },
+  "variables": {
+    "workbookContent": {
+      "version": "Notebook/1.0",
+      "items": [
+        {
+          "type": 1,
+          "content": {
+            "json": "## MSIX App Attach TroubleShooting Dashboard\r\n\r\nThis dashboard can be used to quickly see which Session Hosts have issues with MSIX app attach.\r\n\r\n\r\n\r\n\r\n"
+          },
+          "name": "text - 3"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "// Mounted MSIX app attach Virtual Disks i nthe last hour\r\nlet Events = Event | where Source matches regex \"Microsoft.RDInfra.RDAgent.AppAttach\";\r\nEvents\r\n| where RenderedDescription matches regex \"mounted\" \r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription\r\n| where TimeGenerated >= ago(2hr)\r\n| sort by TimeGenerated asc\r\n| summarize count() by Computer\r\n| sort by count_\r\n| render columnchart\r\n\r\n\r\n",
+            "size": 1,
+            "title": "MSIX app attach Mounted VHD's",
+            "noDataMessage": "No data shown",
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "gridSettings": {
+              "sortBy": [
+                {
+                  "itemKey": "count_",
+                  "sortOrder": 1
+                }
+              ]
+            },
+            "sortBy": [
+              {
+                "itemKey": "count_",
+                "sortOrder": 1
+              }
+            ]
+          },
+          "customWidth": "100",
+          "name": "query - 3",
+          "styleSettings": {
+            "maxWidth": "100",
+            "showBorder": true
+          }
+        },
+        {
+          "type": 12,
+          "content": {
+            "version": "NotebookGroup/1.0",
+            "groupType": "editable",
+            "loadType": "explicit",
+            "items": [
+              {
+                "type": 3,
+                "content": {
+                  "version": "KqlItem/1.0",
+                  "query": "// Mounted MSIX app attach Virtual Disks i nthe last hour\r\nlet Events = Event | where Source matches regex \"Microsoft.RDInfra.RDAgent.AppAttach\";\r\nEvents\r\n| where RenderedDescription matches regex \"File not found\" \r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription, Source\r\n| where TimeGenerated >= ago(2hr)\r\n| sort by TimeGenerated asc\r\n| summarize by Computer\r\n\r\n\r\n\r\n\r\n",
+                  "size": 0,
+                  "title": "MSIX Image Missing (Check Host Permissions to Storage and File)",
+                  "noDataMessage": "No Errors found",
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "showRefreshButton": true,
+                  "showExportToExcel": true,
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces",
+                  "gridSettings": {
+                    "sortBy": [
+                      {
+                        "itemKey": "Computer",
+                        "sortOrder": 1
+                      }
+                    ]
+                  },
+                  "sortBy": [
+                    {
+                      "itemKey": "Computer",
+                      "sortOrder": 1
+                    }
+                  ]
+                },
+                "customWidth": "60",
+                "name": "MSIX image issue",
+                "styleSettings": {
+                  "maxWidth": "60",
+                  "showBorder": true
+                }
+              },
+              {
+                "type": 3,
+                "content": {
+                  "version": "KqlItem/1.0",
+                  "query": "// Mounted MSIX app attach Virtual Disks i nthe last hour\r\nlet Events = Event | where Source matches regex \"Microsoft.RDInfra.AppAttach.AppAttachServiceImpl\";\r\nEvents\r\n| where RenderedDescription matches regex \"System.Exception: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.\" \r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription\r\n| project-rename Event_Description = RenderedDescription\r\n| where TimeGenerated >= ago(30m)\r\n| sort by TimeGenerated asc\r\n| summarize by Computer\r\n\r\n",
+                  "size": 4,
+                  "title": " Certificate Errors per Host",
+                  "noDataMessage": "No Certificate Errors",
+                  "noDataMessageStyle": 3,
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "showRefreshButton": true,
+                  "showExportToExcel": true,
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces"
+                },
+                "customWidth": "40",
+                "name": "Certificate errors",
+                "styleSettings": {
+                  "maxWidth": "40",
+                  "showBorder": true
+                }
+              },
+              {
+                "type": 3,
+                "content": {
+                  "version": "KqlItem/1.0",
+                  "query": "// Mounted MSIX app attach Virtual Disks i nthe last hour\r\nlet Events = Event | where Source matches regex \"Microsoft.RDInfra.RDAgent.AppAttach\";\r\nEvents\r\n| where RenderedDescription matches regex \"Error\" \r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription, Source\r\n| where TimeGenerated >= ago(24hr)\r\n| sort by TimeGenerated asc\r\n| summarize count() by Computer\r\n| sort by count_\r\n| render columnchart\r\n\r\n\r\n",
+                  "size": 0,
+                  "title": "MSIX App attach Errors in the last 24 hours",
+                  "noDataMessage": "No errors found in the last 24hours for App Attach",
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces"
+                },
+                "customWidth": "100",
+                "name": "query - 1",
+                "styleSettings": {
+                  "margin": "20",
+                  "padding": "20",
+                  "maxWidth": "100",
+                  "showBorder": true
+                }
+              }
+            ]
+          },
+          "name": "Core Info MSIX"
+        },
+        {
+          "type": 12,
+          "content": {
+            "version": "NotebookGroup/1.0",
+            "groupType": "editable",
+            "items": [
+              {
+                "type": 3,
+                "content": {
+                  "version": "KqlItem/1.0",
+                  "query": "// Mounted MSIX app attach Virtual Disks i nthe last hour\r\nlet Events = Event | where Source matches regex \"Microsoft.RDInfra.RDAgent.AppAttach\";\r\nEvents\r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription\r\n| project-rename Event_Description = RenderedDescription\r\n| where TimeGenerated > ago(2hr)\r\n| sort by TimeGenerated asc\r\n\r\n\r\n\r\n\r\n",
+                  "size": 0,
+                  "title": "MSIX App Attach Mount Logs",
+                  "noDataMessage": "Check configuration",
+                  "noDataMessageStyle": 3,
+                  "timeContext": {
+                    "durationMs": 14400000
+                  },
+                  "showRefreshButton": true,
+                  "showExportToExcel": true,
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces",
+                  "gridSettings": {
+                    "rowLimit": 10000
+                  }
+                },
+                "customWidth": "100",
+                "name": "Event viewer for MSIXappattach",
+                "styleSettings": {
+                  "maxWidth": "50",
+                  "showBorder": true
+                }
+              },
+              {
+                "type": 3,
+                "content": {
+                  "version": "KqlItem/1.0",
+                  "query": "// Mounted MSIX app attach Virtual Disks i nthe last hour\r\nlet Events = Event | where Source matches regex \"Microsoft.RDInfra.AppAttach.AppAttachServiceImpl\";\r\nEvents\r\n| where EventLevelName matches regex \"Error\" \r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription\r\n| project-rename Event_Description = RenderedDescription\r\n| where TimeGenerated >= ago(2hr)\r\n| sort by TimeGenerated asc\r\n\r\n\r\n\r\n\r\n",
+                  "size": 0,
+                  "title": "MSIX App Attach Service Errors",
+                  "noDataMessage": "No errrors",
+                  "noDataMessageStyle": 3,
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "showRefreshButton": true,
+                  "showExportToExcel": true,
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces",
+                  "gridSettings": {
+                    "rowLimit": 10000
+                  }
+                },
+                "customWidth": "100",
+                "name": "App Attach Service Impl",
+                "styleSettings": {
+                  "maxWidth": "100"
+                }
+              },
+              {
+                "type": 3,
+                "content": {
+                  "version": "KqlItem/1.0",
+                  "query": "// Mounted MSIX app attach Virtual Disks i nthe last hour\r\nlet Events = Event | where Source matches regex \"Microsoft.RDInfra.RDAgent.AppAttach.CimVolume\";\r\nEvents\r\n\r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription\r\n| project-rename Description = RenderedDescription\r\n| where TimeGenerated >= ago(2hr)\r\n| sort by TimeGenerated asc\r\n\r\n\r\n\r\n\r\n\r\n",
+                  "size": 0,
+                  "title": "CimFS (CIM Images)",
+                  "noDataMessage": "No Events",
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "showRefreshButton": true,
+                  "showExportToExcel": true,
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces",
+                  "gridSettings": {
+                    "sortBy": [
+                      {
+                        "itemKey": "Computer",
+                        "sortOrder": 1
+                      }
+                    ]
+                  },
+                  "sortBy": [
+                    {
+                      "itemKey": "Computer",
+                      "sortOrder": 1
+                    }
+                  ]
+                },
+                "customWidth": "100",
+                "name": "MSIX image issue - Copy",
+                "styleSettings": {
+                  "margin": "30",
+                  "padding": "30",
+                  "maxWidth": "100",
+                  "showBorder": true
+                }
+              },
+              {
+                "type": 3,
+                "content": {
+                  "version": "KqlItem/1.0",
+                  "query": "// MSIX event Logs - errors only\r\nlet Events = Event | where Source matches regex \"Microsoft-Windows-AppXDeployment-Server\";\r\nEvents\r\n| where EventLevelName matches regex \"Error\" \r\n| project TimeGenerated, Computer, EventLevelName, RenderedDescription\r\n| project-rename Event_Description = RenderedDescription\r\n| where TimeGenerated >= ago(2hr)\r\n| sort by TimeGenerated asc\r\n",
+                  "size": 0,
+                  "title": "MSIX Error Log",
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "showRefreshButton": true,
+                  "showExportToExcel": true,
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces",
+                  "gridSettings": {
+                    "rowLimit": 10000
+                  }
+                },
+                "name": "MSIX Error Logs"
+              }
+            ]
+          },
+          "name": "group - 6"
+        }
+      ],
+      "isLocked": false,
+      "fallbackResourceIds": [
+        "/subscriptions/d96471f8-340c-42d6-92df-eba6fccca8e4/resourceGroups/msixaa01-avd/providers/Microsoft.OperationalInsights/workspaces/avdlogs"
+      ]
+    }
+  },
+  "resources": [
+
+
+    {
+
+
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2020-08-01",
+      "name": "[parameters('workspaceName')]",
+      "location": "[parameters('location')]",
+      "resources": [
+        {
+          "type": "datasources",
+          "apiVersion": "2020-08-01",
+          "name": "RemotedesktopServices",
+          "dependsOn": [
+            "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+          ],
+          "kind": "WindowsEvent",
+          "properties": {
+            "eventLogName": "RemoteDesktopServices",
+            "eventTypes": [
+              {
+                "eventType": "Error"
+              },
+              {
+                "eventType": "Warning"
+              }
+            ]
+          }
+        },
+
+
+        {
+          "type": "datasources",
+          "apiVersion": "2020-08-01",
+          "name": "Microsoft.RDInfra.AppAttach.SysNtfyServiceImpl",
+          "dependsOn": [
+            "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+          ],
+          "kind": "WindowsEvent",
+          "properties": {
+            "eventLogName": "Microsoft.RDInfra.AppAttach.SysNtfyServiceImpl",
+            "eventTypes": [
+              {
+                "eventType": "Error"
+              },
+              {
+                "eventType": "Warning"
+              }
+            ]
+          }
+        },
+
+
+
+
+
+        {
+          "type": "datasources",
+          "apiVersion": "2020-08-01",
+          "name": "Microsoft-Windows-AppXDeployment/Operational",
+          "dependsOn": [
+            "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+          ],
+          "kind": "WindowsEvent",
+          "properties": {
+            "eventLogName": "Microsoft-Windows-AppXDeployment/Operational",
+            "eventTypes": [
+              {
+                "eventType": "Error"
+              },
+              {
+                "eventType": "Warning"
+              },
+              {
+                "eventType": "Information"
+              }
+            ]
+          }
+        },
+
+        {
+          "type": "datasources",
+          "apiVersion": "2020-08-01",
+          "name": "Microsoft-Windows-AppXDeploymentServer/Operational",
+          "dependsOn": [
+            "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+          ],
+          "kind": "WindowsEvent",
+          "properties": {
+            "eventLogName": "Microsoft-Windows-AppXDeploymentServer/Operational",
+            "eventTypes": [
+              {
+                "eventType": "Error"
+              },
+              {
+                "eventType": "Warning"
+              },
+              {
+                "eventType": "Information"
+              }
+            ]
+          }
+        },
+
+
+
+
+
+        {
+          "type": "datasources",
+          "apiVersion": "2020-08-01",
+          "name": "Microsoft.RDInfra.AppAttach",
+          "dependsOn": [
+            "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+          ],
+          "kind": "WindowsEvent",
+          "properties": {
+            "eventLogName": "Microsoft.RDInfra.AppAttach",
+            "eventTypes": [
+              {
+                "eventType": "Error"
+              },
+              {
+                "eventType": "Warning"
+              },
+              {
+                "eventType": "Information"
+              }
+            ]
+          }
+        },
+        {
+          "type": "datasources",
+          "apiVersion": "2020-08-01",
+          "name": "Microsoft.RDInfra.RDAgent.Service.AppAttachHealthCheck",
+          "dependsOn": [
+            "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+          ],
+          "kind": "WindowsEvent",
+          "properties": {
+            "eventLogName": "Microsoft.RDInfra.RDAgent.Service.AppAttachHealthCheck",
+            "eventTypes": [
+              {
+                "eventType": "Error"
+              },
+              {
+                "eventType": "Warning"
+              },
+              {
+                "eventType": "Information"
+              }
+            ]
+          }
+        },
+
+        {
+          "apiVersion": "2020-08-01",
+          "dependsOn": [
+            "[concat('Microsoft.OperationalInsights/workspaces/', parameters('workspaceName'))]"
+          ],
+          "kind": "WindowsEvent",
+          "name": "Microsoft-Windows-AppxPackaging/Operational",
+          "properties": {
+            "eventLogName": "Microsoft-Windows-AppxPackaging/Operational",
+            "eventTypes": [
+              {
+                "eventType": "Error"
+              },
+              {
+                "eventType": "Warning"
+              },
+              {
+                "eventType": "Information"
+              }
+
+
+
+            ]
+
+          },
+          "type": "datasources"
+        }
+      ]
+    },
+
+    {
+
+      "name": "[parameters('workbookId')]",
+      "type": "microsoft.insights/workbooks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2021-03-08",
+      "dependsOn": [],
+      "kind": "shared",
+      "properties": {
+        "displayName": "[parameters('workbookDisplayName')]",
+        "serializedData": "[string(variables('workbookContent'))]",
+        "version": "1.0",
+        "sourceId": "[parameters('workbookSourceId')]",
+        "category": "[parameters('workbookType')]"
+      }
+    }
+
+
+  ],
+  "outputs": {
+    "workbookId": {
+      "type": "string",
+      "value": "[resourceId( 'microsoft.insights/workbooks', parameters('workbookId'))]"
+    }
+  }
+
+}
